@@ -11,8 +11,15 @@ import { state } from '../state.js';
 import { layoutPage, safeFilename, parseRange, PAGE_SIZES } from '../core/pdf-layout.js';
 import { createZip } from '../core/zip.js';
 import { decodeImage, drawableToCanvas, canvasToBlob } from '../core/image.js';
+import { isNative, nativeSave, nativeShare } from '../native.js';
 
 export function downloadBlob(blob, filename) {
+  if (isNative()) {
+    return nativeSave(blob, filename).then((res) => {
+      if (res === 'downloaded') toast(`Saved to Documents/DocuScanner/${filename}`, 'success');
+      return res;
+    }).catch((e) => toast(`Save failed: ${e.message || e}`, 'error'));
+  }
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -24,6 +31,7 @@ export function downloadBlob(blob, filename) {
 }
 
 async function shareOrDownload(blob, filename, share) {
+  if (isNative()) return share ? nativeShare({ blob, filename }) : nativeSave(blob, filename);
   if (share) {
     const file = new File([blob], filename, { type: blob.type });
     if (navigator.canShare?.({ files: [file] })) {
@@ -212,7 +220,7 @@ export function openExport(doc, pages) {
       seg([['pdf', 'PDF'], ['jpeg', 'JPEG'], ['png', 'PNG'], ['txt', 'Text']], 'format', drawFormat),
       pdfOpts, qualityRow, rangeRow,
       h('div.actions', { style: { flexWrap: 'wrap' } },
-        h('button.btn.ghost', { onclick: () => { close(false); printDoc(pages); } }, h('span', { html: icons.pdf }), 'Print'),
+        !isNative() && h('button.btn.ghost', { onclick: () => { close(false); printDoc(pages); } }, h('span', { html: icons.pdf }), 'Print'),
         h('button.btn', { onclick: () => run(true) }, h('span', { html: icons.share }), 'Share'),
         h('button.btn.primary', { onclick: () => run(false) }, h('span', { html: icons.download }), 'Download')),
     ].filter(Boolean));

@@ -8,6 +8,7 @@ import * as db from '../core/storage.js';
 import { navigate } from '../router.js';
 import { state, updateSetting } from '../state.js';
 import { downloadBlob } from './export-dialog.js';
+import { isNative, nativeShare } from '../native.js';
 import { safeFilename } from '../core/pdf-layout.js';
 
 export const OCR_LANGUAGES = [
@@ -133,7 +134,9 @@ export async function render(root, { id }) {
   }
 
   async function share() {
-    if (navigator.share) {
+    if (isNative()) {
+      try { await nativeShare({ title: doc.name, text: textarea.value }); } catch (e) { toast(`Share failed: ${e.message || e}`, 'error'); }
+    } else if (navigator.share) {
       try { await navigator.share({ title: doc.name, text: textarea.value }); } catch { /* cancelled */ }
     } else copy();
   }

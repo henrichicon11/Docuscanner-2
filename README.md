@@ -96,3 +96,28 @@ tests/             Vitest unit tests
 
 ## License
 MIT
+
+## Android app (APK)
+
+The web app is packaged as a native Android app with [Capacitor](https://capacitorjs.com/)
+(app id `com.docuscanner.app`, min Android 7.0 / API 24, target API 36). The native project lives in `android/`.
+
+Native-specific behaviour (`src/native.js`):
+- **Download** saves exports to `Documents/DocuScanner/` on the device (falls back to the share sheet if that fails).
+- **Share** uses the Android share sheet via `@capacitor/share`.
+- Camera access is requested at runtime. The service worker and "Install app" prompt are turned off inside the app.
+- OCR language data still downloads from the internet the first time you use a language.
+
+### Building the APK
+
+Requirements: Node 20+, a **full JDK 21** (with `javac`), and the Android SDK (platform 36 + build-tools 36).
+
+```bash
+npm install
+export ANDROID_HOME=/path/to/android-sdk   # or create android/local.properties with sdk.dir=...
+npm run android:build
+# -> android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+You can also open the `android/` folder in Android Studio (`npx cap open android`).
+For a Play Store release, set up a signing keystore and run `./gradlew bundleRelease` (or `assembleRelease`) in `android/`.

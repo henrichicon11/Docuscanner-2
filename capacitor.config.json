@@ -1,0 +1,8 @@
+{
+  "appId": "com.docuscanner.app",
+  "appName": "DocuScanner",
+  "webDir": "dist",
+  "android": {
+    "allowMixedContent": false
+  }
+}

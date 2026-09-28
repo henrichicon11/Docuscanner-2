@@ -1,5 +1,6 @@
 /** PWA helpers: service worker registration and install prompt. */
 import { toast } from './ui/dom.js';
+import { isNative } from './native.js';
 
 let deferredPrompt = null;
 
@@ -12,7 +13,8 @@ export function initPWA() {
     deferredPrompt = null;
     toast('DocuScanner installed', 'success');
   });
-  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+  // The native Android app bundles all assets locally, so no service worker is needed there.
+  if ('serviceWorker' in navigator && import.meta.env.PROD && !isNative()) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('./sw.js').then((reg) => {
         reg.addEventListener('updatefound', () => {

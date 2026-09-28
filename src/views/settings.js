@@ -7,6 +7,7 @@ import { PAGE_SIZES } from '../core/pdf-layout.js';
 import { OCR_LANGUAGES } from './ocr.js';
 import * as db from '../core/storage.js';
 import { canInstall, promptInstall } from '../pwa.js';
+import { isNative } from '../native.js';
 
 export async function render(root) {
   const s = state.settings;
@@ -62,6 +63,6 @@ export async function render(root) {
           } }, 'Delete'))),
       h('div.card', {},
         h('h3', {}, 'About'),
-        installRow,
+        !isNative() && installRow,
         h('div.setting', {}, h('div.label', {}, 'DocuScanner v1.0.0', h('small', {}, 'All processing happens on your device. Your documents never leave it unless you export or share them.'))))));
 }
