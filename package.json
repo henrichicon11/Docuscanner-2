@@ -10,5 +10,13 @@
     "preview": "vite preview --host 0.0.0.0 --port 4173",
     "test": "vitest run"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "vite": "^6.4.3",
+    "vitest": "^3.2.7"
+  },
+  "dependencies": {
+    "jspdf": "^4.2.1",
+    "tesseract.js": "^7.0.0"
+  }
 }
