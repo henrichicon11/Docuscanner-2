@@ -1,0 +1,14 @@
+{
+  "name": "docuscanner",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "DocuScanner - a full-featured, offline-first document scanner web app (PWA)",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5173",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 4173",
+    "test": "vitest run"
+  },
+  "license": "MIT"
+}
