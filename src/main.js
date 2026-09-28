@@ -3,6 +3,7 @@ import { route, startRouter } from './router.js';
 import { loadSettings } from './state.js';
 
 route('/', () => import('./views/library.js'));
+route('/camera', () => import('./views/camera.js'));
 
 async function boot() {
   await loadSettings();
