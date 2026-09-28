@@ -47,6 +47,7 @@ export function iconBtn(name, title, onclick, extra = {}) {
 
 export function toast(message, type = 'info', ms = 2600) {
   const root = document.getElementById('toast-root');
+  while (root.children.length >= 2) root.firstChild.remove();
   const t = h(`div.toast.${type}`, {}, message);
   root.appendChild(t);
   setTimeout(() => t.remove(), ms);

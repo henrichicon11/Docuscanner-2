@@ -205,7 +205,7 @@ export function openExport(doc, pages) {
       }
     };
 
-    body.append(
+    body.append(...[
       h('h2', {}, 'Export & share'),
       h('p', {}, `${doc.name} · ${pages.length} page${pages.length > 1 ? 's' : ''} · ~${formatBytes(approxSize)}`),
       h('label', {}, 'Format'),
@@ -214,7 +214,8 @@ export function openExport(doc, pages) {
       h('div.actions', { style: { flexWrap: 'wrap' } },
         h('button.btn.ghost', { onclick: () => { close(false); printDoc(pages); } }, h('span', { html: icons.pdf }), 'Print'),
         h('button.btn', { onclick: () => run(true) }, h('span', { html: icons.share }), 'Share'),
-        h('button.btn.primary', { onclick: () => run(false) }, h('span', { html: icons.download }), 'Download')));
+        h('button.btn.primary', { onclick: () => run(false) }, h('span', { html: icons.download }), 'Download')),
+    ].filter(Boolean));
     drawFormat();
     return body;
   });

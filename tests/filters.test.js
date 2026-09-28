@@ -41,3 +41,15 @@ describe('filters', () => {
     expect(src.data).toEqual(copy);
   });
 });
+
+import { magicColor } from '../src/core/filters.js';
+describe('magicColor', () => {
+  it('neutralizes a yellow paper cast and keeps ink dark', () => {
+    const src = img(80, 80, (x) => (x >= 38 && x <= 41 ? [40, 38, 30, 255] : [236, 230, 190, 255]));
+    const out = magicColor(src);
+    const i = (40 * 80 + 10) * 4;
+    expect(out.data[i]).toBeGreaterThan(245);
+    expect(out.data[i + 2]).toBeGreaterThan(245); // blue channel lifted -> no yellow cast
+    expect(out.data[(40 * 80 + 40) * 4]).toBeLessThan(90);
+  });
+});

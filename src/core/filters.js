@@ -99,34 +99,80 @@ export function blackWhite(img, { strength = 50 } = {}) {
 }
 
 /**
- * "Magic color": flattens uneven illumination by dividing each channel by an
- * estimate of the local background (large box blur of luminance), then boosts contrast
- * and saturation. Result: white paper, vivid ink.
+ * Estimate the paper background of one channel: block-wise maximum on a coarse grid
+ * (ignores ink), dilated and blurred, then bilinearly upsampled.
+ * Returns a function (x, y) -> background value.
+ */
+export function estimateBackground(src, w, h, channel, cells = 48) {
+  const bs = Math.max(4, Math.ceil(Math.max(w, h) / cells));
+  const gw = Math.ceil(w / bs);
+  const gh = Math.ceil(h / bs);
+  let grid = new Float32Array(gw * gh);
+  for (let gy = 0; gy < gh; gy++) {
+    for (let gx = 0; gx < gw; gx++) {
+      // use a high percentile (~90th) instead of the absolute max to resist noise
+      const vals = [];
+      for (let y = gy * bs; y < Math.min(h, (gy + 1) * bs); y += 2)
+        for (let x = gx * bs; x < Math.min(w, (gx + 1) * bs); x += 2) vals.push(src[(y * w + x) * 4 + channel]);
+      vals.sort((p, q) => p - q);
+      grid[gy * gw + gx] = vals[Math.floor(vals.length * 0.9)] || 255;
+    }
+  }
+  // dilate (3x3 max) to cover blocks fully filled with ink, then 3x3 blur twice
+  const pass = (fn) => {
+    const out = new Float32Array(gw * gh);
+    for (let y = 0; y < gh; y++)
+      for (let x = 0; x < gw; x++) {
+        const nb = [];
+        for (let dy = -1; dy <= 1; dy++)
+          for (let dx = -1; dx <= 1; dx++) {
+            const xx = Math.min(gw - 1, Math.max(0, x + dx));
+            const yy = Math.min(gh - 1, Math.max(0, y + dy));
+            nb.push(grid[yy * gw + xx]);
+          }
+        out[y * gw + x] = fn(nb);
+      }
+    grid = out;
+  };
+  pass((nb) => Math.max(...nb));
+  const mean = (nb) => nb.reduce((t, v) => t + v, 0) / nb.length;
+  pass(mean);
+  pass(mean);
+  return (x, y) => {
+    const fx = Math.min(gw - 1, Math.max(0, x / bs - 0.5));
+    const fy = Math.min(gh - 1, Math.max(0, y / bs - 0.5));
+    const x0 = Math.floor(fx), y0 = Math.floor(fy);
+    const x1 = Math.min(gw - 1, x0 + 1), y1 = Math.min(gh - 1, y0 + 1);
+    const tx = fx - x0, ty = fy - y0;
+    const top = grid[y0 * gw + x0] * (1 - tx) + grid[y0 * gw + x1] * tx;
+    const bot = grid[y1 * gw + x0] * (1 - tx) + grid[y1 * gw + x1] * tx;
+    return top * (1 - ty) + bot * ty;
+  };
+}
+
+/**
+ * "Magic color": flattens uneven illumination and removes colour casts by dividing
+ * each channel by its estimated paper background (a local white balance), then boosts
+ * ink contrast and adds a little saturation. Result: neutral white paper, vivid ink.
  */
 export function magicColor(img, { strength = 50 } = {}) {
-  const { width: w, height: h } = img;
-  const g = new Float64Array(w * h);
-  for (let i = 0, p = 0; p < g.length; i += 4, p++) g[p] = lum(img.data, i);
-  const sat = integral(g, w, h);
-  const r = Math.max(8, Math.round(Math.min(w, h) / 12));
+  const { width: w, height: h, data: src } = img;
+  const bgs = [0, 1, 2].map((c) => estimateBackground(src, w, h, c));
   const out = clone(img);
   const d = out.data;
   const gain = 1 + strength / 100;
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
-      const p = y * w + x;
-      const bg = Math.max(30, boxMean(sat, w, h, x, y, r));
-      const k = 245 / bg;
-      const i = p * 4;
+      const i = (y * w + x) * 4;
       for (let c = 0; c < 3; c++) {
-        let v = d[i + c] * k;
-        // S-curve contrast around paper white
-        v = 255 - (255 - v) * gain;
+        const bg = Math.max(30, bgs[c](x, y));
+        let v = (src[i + c] / bg) * 255;
+        v = 255 - (255 - v) * gain; // push paper to white, deepen ink
         d[i + c] = clamp(v);
       }
     }
   }
-  return adjust(out, { saturation: 25 });
+  return adjust(out, { saturation: 20 });
 }
 
 export function lighten(img) {
