@@ -8,6 +8,7 @@ route('/crop', () => import('./views/crop.js'));
 route('/doc/:id', () => import('./views/document.js'));
 route('/page/:id', () => import('./views/editor.js'));
 route('/ocr/:id', () => import('./views/ocr.js'));
+route('/sign/:id', () => import('./views/sign.js'));
 
 async function boot() {
   await loadSettings();
