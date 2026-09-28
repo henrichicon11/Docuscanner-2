@@ -4,6 +4,7 @@ import { loadSettings } from './state.js';
 
 route('/', () => import('./views/library.js'));
 route('/camera', () => import('./views/camera.js'));
+route('/crop', () => import('./views/crop.js'));
 
 async function boot() {
   await loadSettings();
