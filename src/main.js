@@ -7,6 +7,7 @@ route('/camera', () => import('./views/camera.js'));
 route('/crop', () => import('./views/crop.js'));
 route('/doc/:id', () => import('./views/document.js'));
 route('/page/:id', () => import('./views/editor.js'));
+route('/ocr/:id', () => import('./views/ocr.js'));
 
 async function boot() {
   await loadSettings();
