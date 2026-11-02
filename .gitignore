@@ -4,3 +4,10 @@ dist/
 *.log
 coverage/
 .env
+
+# Android build tooling (local only)
+.android-sdk/
+.gradle-home/
+.gradle-build.log
+.jdk/
+*.apk

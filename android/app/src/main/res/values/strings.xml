@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">DocuScanner</string>
+    <string name="title_activity_main">DocuScanner</string>
+    <string name="package_name">com.docuscanner.app</string>
+    <string name="custom_url_scheme">com.docuscanner.app</string>
+</resources>
